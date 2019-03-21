@@ -33,7 +33,7 @@ public class Employe {
 
     private Double tempsPartiel = 1.0;
 
-    //private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Employe() {
     }
