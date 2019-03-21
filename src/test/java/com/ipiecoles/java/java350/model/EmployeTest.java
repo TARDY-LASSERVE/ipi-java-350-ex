@@ -113,4 +113,28 @@ public class EmployeTest {
         Assertions.assertThat(nbAnnee).isGreaterThanOrEqualTo(0);
 
     }
+
+    @ParameterizedTest(name = "L'augmentation du salaire du matricule {1} est valide.")
+    @CsvSource({
+            "'M00001', 1700.0, 4.1, 2210.0",
+            "'M00001', 1800.0, -5, 2700.0",
+            "'T12345', 1200.0, 6.0, 1680.0",
+            "'T12345', 600.0, 3.0, 780.0",
+            "'T12345', 2300.0, 4.0, 3220.0"
+    })
+    public void testAugmentationSalaire(String matricule, Double salaire, Double pourcentage, Double salaireAugmente){
+        //Given
+        Employe e = new Employe();
+        e.setMatricule(matricule);
+        e.setSalaire(salaire);
+
+        //When
+        e.augmenterSalaire(pourcentage);
+
+        //Then
+        Assertions.assertThat(pourcentage).isLessThanOrEqualTo(100.0);
+        Assertions.assertThat(pourcentage).isGreaterThan(0.0);
+        Assertions.assertThat(e.getSalaire()).isEqualTo(salaireAugmente);
+        Assertions.assertThat(e.getSalaire()).isLessThan(3000.01); //Salaire maximum
+    }
 }

@@ -11,7 +11,6 @@ import java.util.Objects;
 @Entity
 public class Employe {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -43,6 +42,11 @@ public class Employe {
         this.tempsPartiel = tempsPartiel;
     }
 
+    /**
+     * Calcul le nombre d'années d'ancienneté d'un employé
+     *
+     * @return le nombre d'années d'ancienneté de l'employé concerné
+     */
     public Integer getNombreAnneeAnciennete() {
         if(dateEmbauche != null && dateEmbauche.isBefore(LocalDate.now())){
             return LocalDate.now().getYear() - dateEmbauche.getYear();
@@ -65,10 +69,10 @@ public class Employe {
      * @return Retourne le nombre de RTT
      */
     public Integer getNbRtt(LocalDate dateCalcul){
-        int anneeBissextile = dateCalcul.isLeapYear() ? 365 : 366;
+        Integer anneeBissextile = dateCalcul.isLeapYear() ? 365 : 366;
 
         //Calcul du nombre de jours dans l'année étant compris dans un week-end afin de les enlever du calcul final
-        int nbJoursDeWeekEnds = 104;
+        Integer nbJoursDeWeekEnds = 104;
         switch (LocalDate.of(dateCalcul.getYear(),1,1).getDayOfWeek()){
             case THURSDAY:
                 if(dateCalcul.isLeapYear()) {
@@ -81,13 +85,15 @@ public class Employe {
                 } else {
                     nbJoursDeWeekEnds =  nbJoursDeWeekEnds + 1;
                 }
+                break;
             case SATURDAY:
                 nbJoursDeWeekEnds = nbJoursDeWeekEnds + 1;
                 break;
         }
-        //Récupère tous les jours fériés hors week-end
-        int monInt = (int) Entreprise.joursFeries(dateCalcul).stream().filter(localDate -> localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
-        return (int) Math.ceil((anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJoursDeWeekEnds - Entreprise.NB_CONGES_BASE - monInt) * tempsPartiel);
+        //Récupère tous les jours fériés hors compris dans un week-end
+        Long nbJoursFeriesHorsWeekEnds = Entreprise.joursFeries(dateCalcul).stream().filter(localDate -> localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
+        Long nbJoursTravailles = anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJoursDeWeekEnds - Entreprise.NB_CONGES_BASE - nbJoursFeriesHorsWeekEnds;
+        return Double.hashCode(Math.ceil(nbJoursTravailles * tempsPartiel));
     }
 
     /**
@@ -124,8 +130,19 @@ public class Employe {
         return prime * this.tempsPartiel;
     }
 
-    //Augmenter salaire
-    //public void augmenterSalaire(double pourcentage){}
+    /**
+     * Augmenter le salaire d'un employé entre 3 et 6%
+     *
+     * @param pourcentage de l'augmentation
+     */
+    public void augmenterSalaire(Double pourcentage){
+        Double augmentation = pourcentage / 100;
+        if(augmentation > 1 )
+        this.salaire = this.salaire * (pourcentage / 100);
+        if(this.getSalaire() > Entreprise.SALAIRE_MAX) {
+            this.setSalaire(Entreprise.SALAIRE_MAX);
+        }
+    }
 
     public Long getId() {
         return id;
