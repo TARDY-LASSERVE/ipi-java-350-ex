@@ -1,5 +1,7 @@
 package com.ipiecoles.java.java350.model;
 
+import org.slf4j.Logger;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -28,6 +30,8 @@ public class Employe {
     private Integer performance = Entreprise.PERFORMANCE_BASE;
 
     private Double tempsPartiel = 1.0;
+
+    private Logger logger;
 
     public Employe() {
     }
@@ -137,10 +141,12 @@ public class Employe {
      */
     public void augmenterSalaire(Double pourcentage){
         Double augmentation = pourcentage / 100;
-        if(augmentation > 1 )
-        this.salaire = this.salaire * (pourcentage / 100);
-        if(this.getSalaire() > Entreprise.SALAIRE_MAX) {
-            this.setSalaire(Entreprise.SALAIRE_MAX);
+        logger.info("augmentation = " + augmentation);
+        if(augmentation <= 1 ){
+            this.salaire += this.salaire * (pourcentage / 100);
+            if(this.getSalaire() > Entreprise.SALAIRE_MAX) {
+                this.setSalaire(Entreprise.SALAIRE_MAX);
+            }
         }
     }
 
