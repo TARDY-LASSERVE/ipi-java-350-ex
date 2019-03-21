@@ -114,6 +114,7 @@ public class EmployeTest {
 
     }
 
+    /*
     @ParameterizedTest(name = "L'augmentation du salaire du matricule {1} est valide.")
     @CsvSource({
             "'M00001', 1700.0, 4.1, 2210.0",
@@ -137,4 +138,5 @@ public class EmployeTest {
         Assertions.assertThat(e.getSalaire()).isEqualTo(salaireAugmente);
         Assertions.assertThat(e.getSalaire()).isLessThan(3000.01); //Salaire maximum
     }
+    */
 }
