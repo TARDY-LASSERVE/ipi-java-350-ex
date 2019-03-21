@@ -33,7 +33,7 @@ public class Employe {
 
     private Double tempsPartiel = 1.0;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    //private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Employe() {
     }
@@ -143,10 +143,10 @@ public class Employe {
      */
     public void augmenterSalaire(Double pourcentage){
         Double augmentation = pourcentage / 100;
-        logger.info("augmentation = " + augmentation);
+        //logger.info("augmentation = " + augmentation);
         if(augmentation <= 1 ){
-            this.salaire = this.salaire + (this.salaire * (pourcentage / 100));
-            logger.info("this.salaire * (pourcentage / 100) = " + (this.salaire * (pourcentage / 100)));
+            this.salaire = Double.sum(this.salaire, this.salaire * (pourcentage / 100));
+            //logger.info("this.salaire * (pourcentage / 100) = " + (this.salaire * (pourcentage / 100)));
             if(this.getSalaire() > Entreprise.SALAIRE_MAX) {
                 this.setSalaire(Entreprise.SALAIRE_MAX);
             }
