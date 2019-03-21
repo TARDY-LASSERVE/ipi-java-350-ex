@@ -1,5 +1,6 @@
 package com.ipiecoles.java.java350.model;
 
+import com.ipiecoles.java.java350.exception.EmployeException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,7 +8,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.fail;
+
 public class EmployeTest {
+
 
     /**
      * Récupération des valeurs des constantes déjà initialisés ailleurs :
@@ -113,29 +117,81 @@ public class EmployeTest {
 
     }
 
-    /*
-    @ParameterizedTest(name = "L'augmentation du salaire du matricule {1} est valide.")
+    @ParameterizedTest(name = "L'augmentation du salaire {1} est valide.")
     @CsvSource({
-            "'M00001', 1700.0, 4.1, 2210.0",
-            "'M00001', 1800.0, -5, 2700.0",
-            "'T12345', 1200.0, 6.0, 1680.0",
-            "'T12345', 600.0, 3.0, 780.0",
-            "'T12345', 2300.0, 4.0, 3220.0"
+            "1700.0, 4.1, 1769.7",
+            "1800.0, 0.0, 1800.0",
+            "1200.0, 6.0, 1272.0",
+            "600.0, 3.0, 618.0",
+            "2300.0, 40.0, 3000.0"
     })
-    public void testAugmentationSalaire(String matricule, Double salaire, Double pourcentage, Double salaireAugmente){
+    public void testAugmentationSalaire(Double salaire, Double pourcentage, Double newSalaire) throws IllegalArgumentException{
         //Given
         Employe e = new Employe();
-        e.setMatricule(matricule);
         e.setSalaire(salaire);
 
         //When
         e.augmenterSalaire(pourcentage);
 
         //Then
-        Assertions.assertThat(pourcentage).isLessThanOrEqualTo(100.0);
-        Assertions.assertThat(pourcentage).isGreaterThan(0.0);
-        Assertions.assertThat(e.getSalaire()).isEqualTo(salaireAugmente);
+        Assertions.assertThat(pourcentage).isGreaterThanOrEqualTo(0.0);
+        Assertions.assertThat(e.getSalaire()).isEqualTo(newSalaire);
         Assertions.assertThat(e.getSalaire()).isLessThan(3000.01); //Salaire maximum
     }
-    */
+
+
+    @Test
+    public void testAugmentationSalaireNull() throws IllegalArgumentException {
+        //Given
+        Boolean thrown = false;
+        Double salaire = 1000.0;
+        Employe employe = new Employe();
+        employe.setSalaire(salaire);
+
+        //When - Then
+        try {
+            employe.augmenterSalaire(null);
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+
+        Assertions.assertThat(thrown).isEqualTo(true);
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
+
+    }
+
+    @Test
+    public void testAugmentationSalaireNegatif() throws IllegalArgumentException {
+        //Given
+        Double salaire = 1000.0;
+        Employe employe = new Employe();
+        employe.setSalaire(salaire);
+
+        //When - Then
+        try {
+            employe.augmenterSalaire(-5.0);
+        } catch (IllegalArgumentException e) {
+            Assertions.assertThatIllegalArgumentException();
+        }
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
+
+    }
+
+    @Test
+    public void testAugmentationSalaireSuperieure() throws IllegalArgumentException {
+        //Given
+        Double salaire = 1000.0;
+        Employe employe = new Employe();
+        employe.setSalaire(salaire);
+
+        //When - Then
+        try {
+            employe.augmenterSalaire(50.0);
+        } catch (IllegalArgumentException e) {
+            Assertions.assertThatIllegalArgumentException();
+        }
+        Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
+
+    }
+
 }

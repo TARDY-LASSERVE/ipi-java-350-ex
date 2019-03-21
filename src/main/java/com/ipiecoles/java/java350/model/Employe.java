@@ -1,5 +1,6 @@
 package com.ipiecoles.java.java350.model;
 
+import com.ipiecoles.java.java350.exception.EmployeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -32,8 +33,6 @@ public class Employe {
     private Integer performance = Entreprise.PERFORMANCE_BASE;
 
     private Double tempsPartiel = 1.0;
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Employe() {
     }
@@ -141,16 +140,22 @@ public class Employe {
      *
      * @param pourcentage de l'augmentation
      */
-    public void augmenterSalaire(Double pourcentage){
-        Double augmentation = pourcentage / 100;
-        //logger.info("augmentation = " + augmentation);
-        if(augmentation <= 1 ){
-            this.salaire = Double.sum(this.salaire, this.salaire * (pourcentage / 100));
-            //logger.info("this.salaire * (pourcentage / 100) = " + (this.salaire * (pourcentage / 100)));
+    public void augmenterSalaire(Double pourcentage) throws IllegalArgumentException {
+        if(pourcentage == null){
+            throw new IllegalArgumentException("Le pourcentage d'augmentation du salaire est null ou négatif !");
+        }
+
+        if(pourcentage < 50 && pourcentage > 0.0){
+            Double augmentation = pourcentage / 100;
+            this.salaire = Double.sum(this.salaire, this.salaire * augmentation);
             if(this.getSalaire() > Entreprise.SALAIRE_MAX) {
                 this.setSalaire(Entreprise.SALAIRE_MAX);
             }
         }
+        else if(pourcentage >= 50){
+            throw new IllegalArgumentException("L'employé ne peut pas avoir un trop gros salaire !!");
+        }
+
     }
 
     public Long getId() {
