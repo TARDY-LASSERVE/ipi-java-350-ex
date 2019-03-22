@@ -63,18 +63,14 @@ public class Employe {
         return Entreprise.NB_CONGES_BASE + this.getNombreAnneeAnciennete();
     }
 
-    public Integer getNbRtt(){
-        return getNbRtt(LocalDate.now());
-    }
-
     /**
      * Calcul le nombre de RTT de l'employé
      *
      * @param dateCalcul Date du calcul du nombre de RTT
      * @return Retourne le nombre de RTT
      */
-    public Integer getNbRtt(LocalDate dateCalcul){
-        Integer anneeBissextile = dateCalcul.isLeapYear() ? 365 : 366;
+    public Double getNbRtt(LocalDate dateCalcul){
+        Integer anneeBissextile = dateCalcul.isLeapYear() ? 366 : 365;
 
         //Calcul du nombre de jours dans l'année étant compris dans un week-end afin de les enlever du calcul final
         Integer nbJoursDeWeekEnds = 104;
@@ -95,10 +91,19 @@ public class Employe {
                 nbJoursDeWeekEnds = nbJoursDeWeekEnds + 1;
                 break;
         }
+
         //Récupère tous les jours fériés hors compris dans un week-end
-        Long nbJoursFeriesHorsWeekEnds = Entreprise.joursFeries(dateCalcul).stream().filter(localDate -> localDate.getDayOfWeek().getValue() <= DayOfWeek.FRIDAY.getValue()).count();
-        Long nbJoursTravailles = anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJoursDeWeekEnds - Entreprise.NB_CONGES_BASE - nbJoursFeriesHorsWeekEnds;
-        return Double.hashCode(Math.ceil(nbJoursTravailles * tempsPartiel));
+        Integer nbJoursFeriesHorsWeekEnds = Entreprise.joursFeries(dateCalcul).size();
+        Integer jourSemaine;
+        for (LocalDate jourFerie : Entreprise.joursFeries(dateCalcul)){
+            jourSemaine = jourFerie.getDayOfWeek().getValue();
+            if(jourSemaine > DayOfWeek.FRIDAY.getValue() && jourSemaine <= DayOfWeek.SUNDAY.getValue() ) {
+                nbJoursFeriesHorsWeekEnds = nbJoursFeriesHorsWeekEnds - 1;
+            }
+        }
+
+        Integer nbJoursRTT = anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJoursDeWeekEnds - Entreprise.NB_CONGES_BASE - nbJoursFeriesHorsWeekEnds;
+        return Math.ceil(nbJoursRTT * tempsPartiel);
     }
 
     /**

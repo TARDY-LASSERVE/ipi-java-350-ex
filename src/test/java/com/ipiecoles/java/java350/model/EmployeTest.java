@@ -5,13 +5,16 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.fail;
 
 public class EmployeTest {
-
 
     /**
      * Récupération des valeurs des constantes déjà initialisés ailleurs :
@@ -192,6 +195,32 @@ public class EmployeTest {
         }
         Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
 
+    }
+
+    @ParameterizedTest(name = "Nb Jours RTT.")
+    @CsvSource({
+            "2019, 8.0",
+            "2021, 10.0",
+            "2022, 10.0",
+            "2032, 11.0"
+    })
+    /**
+     * Test Ligne 1 : 104 NbJrsWeekEnd, 10 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 2 : 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 3 : 105 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 4 : 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd, Année Bissextile
+     */
+    public void testNbJoursRttTempsPlein(Integer anneeCalcul, Double nbJrsRTT){
+        //Given
+        Employe e = new Employe();
+        e.setTempsPartiel(1.0);
+        LocalDate dateCalcul = LocalDate.of(anneeCalcul, 1, 1);
+
+        //When
+        Double nbRtt = e.getNbRtt(dateCalcul);
+
+        //Then
+        Assertions.assertThat(nbRtt).isEqualTo(nbJrsRTT);
     }
 
 }
