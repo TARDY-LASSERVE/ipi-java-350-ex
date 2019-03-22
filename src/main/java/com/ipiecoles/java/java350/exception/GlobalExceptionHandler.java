@@ -15,10 +15,10 @@ public class GlobalExceptionHandler {
         return entityNotFoundException.getMessage();
     }
 
-    @ExceptionHandler(ConflictException.class)
+    @ExceptionHandler(EmployeException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public String handleConflictException(
-            ConflictException e) {
+    public String handleEmployeException(
+            EmployeException e) {
         return e.getMessage();
     }
 

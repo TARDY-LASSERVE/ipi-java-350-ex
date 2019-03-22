@@ -1,18 +1,12 @@
 package com.ipiecoles.java.java350.model;
 
-import com.ipiecoles.java.java350.exception.EmployeException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityExistsException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-
-import static org.assertj.core.api.Assertions.fail;
 
 public class EmployeTest {
 
@@ -170,18 +164,21 @@ public class EmployeTest {
         Employe employe = new Employe();
         employe.setSalaire(salaire);
 
-        //When - Then
+        //When
         try {
             employe.augmenterSalaire(-5.0);
-        } catch (IllegalArgumentException e) {
-            Assertions.assertThatIllegalArgumentException();
+            Assertions.fail("La méthode aurait dû lancer une exception");
+        }
+        //Then
+        catch (IllegalArgumentException illegalArgumentException) {
+            Assertions.assertThat(illegalArgumentException.getMessage()).isEqualTo("Le pourcentage d'augmentation du salaire est null ou négatif !");
         }
         Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
 
     }
 
     @Test
-    public void testAugmentationSalaireSuperieure() throws IllegalArgumentException {
+    public void testAugmentationSalaireSuperieureALimite() throws IllegalArgumentException {
         //Given
         Double salaire = 1000.0;
         Employe employe = new Employe();
@@ -190,13 +187,26 @@ public class EmployeTest {
         //When - Then
         try {
             employe.augmenterSalaire(50.0);
-        } catch (IllegalArgumentException e) {
-            Assertions.assertThatIllegalArgumentException();
+            Assertions.fail("La méthode aurait dû lancer une exception");
+        }
+        //Then
+        catch (IllegalArgumentException illegalArgumentException) {
+            Assertions.assertThat(illegalArgumentException.getMessage()).isEqualTo("L'employé ne peut pas avoir un trop gros salaire !!");
         }
         Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
 
     }
 
+
+    /**
+     * Vérifie le calcul du nombre de RTTs d'un employé à TEMPS PLEIN
+     * en fonction de la date passée en paramètre
+     *
+     * Test Ligne 1 : En 2019, il y a 104 NbJrsWeekEnd, 10 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 2 : En 2021, il y a 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 3 : 105 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
+     * Test Ligne 4 : 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd, Année Bissextile
+     */
     @ParameterizedTest(name = "Nb Jours RTT.")
     @CsvSource({
             "2019, 8.0",
@@ -204,12 +214,6 @@ public class EmployeTest {
             "2022, 10.0",
             "2032, 11.0"
     })
-    /**
-     * Test Ligne 1 : 104 NbJrsWeekEnd, 10 NbJrsFeriesHorsWeekEnd
-     * Test Ligne 2 : 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
-     * Test Ligne 3 : 105 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd
-     * Test Ligne 4 : 104 NbJrsWeekEnd, 7 NbJrsFeriesHorsWeekEnd, Année Bissextile
-     */
     public void testNbJoursRttTempsPlein(Integer anneeCalcul, Double nbJrsRTT){
         //Given
         Employe e = new Employe();

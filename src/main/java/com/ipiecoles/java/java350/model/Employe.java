@@ -64,31 +64,31 @@ public class Employe {
     }
 
     /**
-     * Calcul le nombre de RTT de l'employé
+     * Calcul le nombre de RTT de l'employé en fonction de l'année concernée
      *
      * @param dateCalcul Date du calcul du nombre de RTT
-     * @return Retourne le nombre de RTT
+     * @return Retourne le nombre de RTT selon le temps plein
      */
     public Double getNbRtt(LocalDate dateCalcul){
         Integer anneeBissextile = dateCalcul.isLeapYear() ? 366 : 365;
 
         //Calcul du nombre de jours dans l'année étant compris dans un week-end afin de les enlever du calcul final
-        Integer nbJoursDeWeekEnds = 104;
+        Integer nbJrsOfWeekEnds = 104;
         switch (LocalDate.of(dateCalcul.getYear(),1,1).getDayOfWeek()){
             case THURSDAY:
                 if(dateCalcul.isLeapYear()) {
-                    nbJoursDeWeekEnds =  nbJoursDeWeekEnds + 1;
+                    nbJrsOfWeekEnds +=  1;
                 }
                 break;
             case FRIDAY:
                 if(dateCalcul.isLeapYear()) {
-                    nbJoursDeWeekEnds =  nbJoursDeWeekEnds + 2;
+                    nbJrsOfWeekEnds += 2;
                 } else {
-                    nbJoursDeWeekEnds =  nbJoursDeWeekEnds + 1;
+                    nbJrsOfWeekEnds += 1;
                 }
                 break;
             case SATURDAY:
-                nbJoursDeWeekEnds = nbJoursDeWeekEnds + 1;
+                nbJrsOfWeekEnds += 1;
                 break;
         }
 
@@ -102,8 +102,8 @@ public class Employe {
             }
         }
 
-        Integer nbJoursRTT = anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJoursDeWeekEnds - Entreprise.NB_CONGES_BASE - nbJoursFeriesHorsWeekEnds;
-        return Math.ceil(nbJoursRTT * tempsPartiel);
+        Integer nbJrsRTT = anneeBissextile - Entreprise.NB_JOURS_MAX_FORFAIT - nbJrsOfWeekEnds - Entreprise.NB_CONGES_BASE - nbJoursFeriesHorsWeekEnds;
+        return Math.ceil(nbJrsRTT * tempsPartiel);
     }
 
     /**
@@ -146,7 +146,7 @@ public class Employe {
      * @param pourcentage de l'augmentation
      */
     public void augmenterSalaire(Double pourcentage) throws IllegalArgumentException {
-        if(pourcentage == null){
+        if(pourcentage == null || pourcentage < 0.0){
             throw new IllegalArgumentException("Le pourcentage d'augmentation du salaire est null ou négatif !");
         }
 
