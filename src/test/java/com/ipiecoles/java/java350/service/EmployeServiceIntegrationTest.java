@@ -1,51 +1,63 @@
 package com.ipiecoles.java.java350.service;
 
+
 import com.ipiecoles.java.java350.exception.EmployeException;
 import com.ipiecoles.java.java350.model.Employe;
 import com.ipiecoles.java.java350.model.Entreprise;
 import com.ipiecoles.java.java350.model.NiveauEtude;
 import com.ipiecoles.java.java350.model.Poste;
 import com.ipiecoles.java.java350.repository.EmployeRepository;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-import static org.apache.commons.lang.StringUtils.substring;
-
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class EmployeServiceIntegrationTest {
 
     @Autowired
-    private EmployeService employeService;
+    EmployeService employeService;
 
     @Autowired
     private EmployeRepository employeRepository;
 
+    @BeforeEach
+    @AfterEach
+    public void setup(){
+        employeRepository.deleteAll();
+    }
+
     @Test
     public void integrationEmbaucheEmploye() throws EmployeException {
-        //Given avec de vraies données d'entrée
+        //Given
         employeRepository.save(new Employe("Doe", "John", "T12345", LocalDate.now(), Entreprise.SALAIRE_BASE, 1, 1.0));
-        Employe e = employeRepository.findByMatricule("T12345");
-
         String nom = "Doe";
         String prenom = "John";
         Poste poste = Poste.TECHNICIEN;
         NiveauEtude niveauEtude = NiveauEtude.BTS_IUT;
         Double tempsPartiel = 1.0;
 
-        //When avec appel de vraies méthodes de repository
+        //When
         employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
-        Employe e2 = employeRepository.findByMatricule("T12346");
 
-        //Then avec de vraies vérifications
-        Assertions.assertThat(e.getNom()).isEqualTo(e2.getNom());
-        Assertions.assertThat(e.getPrenom()).isEqualTo(e2.getPrenom());
-        Assertions.assertThat(substring(e.getMatricule(), 2)).isLessThan(substring(e.getMatricule(), 2, 5).concat("6"));
-        Assertions.assertThat(e.getDateEmbauche()).isEqualTo(e2.getDateEmbauche());
-        Assertions.assertThat(e.getTempsPartiel()).isEqualTo(e2.getTempsPartiel());
+        //Then
+        Employe employe = employeRepository.findByMatricule("T12346");
+        Assertions.assertNotNull(employe);
+        Assertions.assertEquals(nom, employe.getNom());
+        Assertions.assertEquals(prenom, employe.getPrenom());
+        Assertions.assertEquals(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")), employe.getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Assertions.assertEquals("T12346", employe.getMatricule());
+        Assertions.assertEquals(1.0, employe.getTempsPartiel().doubleValue());
 
+        //1521.22 * 1.2 * 1.0
+        Assertions.assertEquals(1825.46, employe.getSalaire().doubleValue());
     }
 }

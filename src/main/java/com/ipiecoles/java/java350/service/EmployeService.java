@@ -52,9 +52,8 @@ public class EmployeService {
         if(numeroMatricule >= 100000){
             logger.error("La limite des 100000 matricules vient d'être atteinte !");
             throw new EmployeException("Limite des 100000 matricules atteinte !");
-        } else if(numeroMatricule >= 80000) {
-            logger.warn("La limite de la longueur possible d'un matricule (100000) va bientôt être atteinte puisque nous allons créer le matricule " + numeroMatricule);
         }
+
         //On complète le numéro avec des 0 à gauche
         String matricule = "00000" + numeroMatricule;
         matricule = typeEmploye + matricule.substring(matricule.length() - 5);
@@ -70,8 +69,6 @@ public class EmployeService {
         Double salaire = Entreprise.COEFF_SALAIRE_ETUDES.get(niveauEtude) * Entreprise.SALAIRE_BASE;
         if(tempsPartiel != null){
             salaire = salaire * tempsPartiel;
-        } else {
-            logger.warn("Temps partiel non renseigné, salarié à temps plein par défaut");
         }
         salaire = Math.round(salaire*100d)/100d;
 

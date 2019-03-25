@@ -6,7 +6,7 @@ import com.ipiecoles.java.java350.model.Entreprise;
 import com.ipiecoles.java.java350.model.NiveauEtude;
 import com.ipiecoles.java.java350.model.Poste;
 import com.ipiecoles.java.java350.repository.EmployeRepository;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,31 +18,30 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityExistsException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EmployeServiceTest extends EmployeService {
+public class EmployeServiceTest {
 
     @InjectMocks
-    private EmployeService employeService;
+    EmployeService employeService;
 
     @Mock
-    private EmployeRepository employeRepository;
+    EmployeRepository employeRepository;
 
     //Messages fréquemment utilisés dans les méthodes de tests
     private String MSG_ERROR_EXCEPTION = "La méthode aurait dû lancer une exception";
     private String MATRICULE_COMMERCIAL = "C00002";
 
-    //Initialisation du jeu de données testant calculPerformanceCommercial (voir méthode initValueForTestingCalculPerformanceCommercial)
-    private List<Integer> listResultatPerformanceCalculee = new ArrayList<>();
-    private List<Integer> listForPerformanceBase = new ArrayList<>();
-    private List<Long> listForCATraites = new ArrayList<>();
+    //Constante servant au calcul de la performance d'un Commercial
+    private Long OBJECTIF_CA_FOR_TEST = 15000L;
+    private String NOM = "Doe";
+    private String PRENOM = "John";
+    private LocalDate DATE_FOR_TEST = LocalDate.now();
+    private Double TEMPS_PARTIEL = 1.0;
+    private Double AVG_PERFORMANCE_WHICH_START_WITH_C = 1.0; //Moyenne pour les commerciaux (C)
 
     //Réinitialise le jeu de données
     @BeforeEach
@@ -51,42 +50,32 @@ class EmployeServiceTest extends EmployeService {
     }
 
     @Test
-    void testEmbaucheEmployeTechnicienPleinTpsBts() throws EmployeException {
+    public void testEmbaucheEmployeTechnicienPleinTempsBts() throws EmployeException {
         //Given
         String nom = "Doe";
         String prenom = "John";
         Poste poste = Poste.TECHNICIEN;
         NiveauEtude niveauEtude = NiveauEtude.BTS_IUT;
         Double tempsPartiel = 1.0;
+        when(employeRepository.findLastMatricule()).thenReturn("00345");
+        when(employeRepository.findByMatricule("T00346")).thenReturn(null);
 
-        when(employeRepository.findLastMatricule()).thenReturn(null);
-        when(employeRepository.findByMatricule("T00001")).thenReturn(null);
-        when(employeRepository.save(any())).thenAnswer(returnsFirstArg());
-
-        //When Junit 5
+        //When
         employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
 
         //Then
-        ArgumentCaptor<Employe> employeCaptor = ArgumentCaptor.forClass(Employe.class);
-        verify(employeRepository).save(employeCaptor.capture()); // times(1) est une option du verify
-        Employe e = employeCaptor.getValue(); //Récupère l'employe généré par la méthode save ci-dessus
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+        Assertions.assertEquals(nom, employeArgumentCaptor.getValue().getNom());
+        Assertions.assertEquals(prenom, employeArgumentCaptor.getValue().getPrenom());
+        Assertions.assertEquals(this.DATE_FOR_TEST.format(DateTimeFormatter.ofPattern("yyyyMMdd")), employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Assertions.assertEquals("T00346", employeArgumentCaptor.getValue().getMatricule());
+        Assertions.assertEquals(tempsPartiel, employeArgumentCaptor.getValue().getTempsPartiel());
 
-        Assertions.assertThat(e.getNom()).isEqualTo(nom);
-        Assertions.assertThat(e.getPrenom()).isEqualTo(prenom);
-        Assertions.assertThat(e.getMatricule()).isEqualTo("T00001");
-        Assertions.assertThat(e.getPerformance()).isEqualTo(1);
-        //Salaire de base * Coefficient (=1521.22 * 1.2)
-        Assertions.assertThat(e.getSalaire()).isEqualTo(1825.46);
-        Assertions.assertThat(e.getDateEmbauche()).isEqualTo(LocalDate.now());
-        Assertions.assertThat(e.getTempsPartiel()).isEqualTo(tempsPartiel);
-
+        //1521.22 * 1.2 * 1.0
+        Assertions.assertEquals(1825.46, employeArgumentCaptor.getValue().getSalaire().doubleValue());
     }
 
-    /**
-     * Dernier matricule pour un employé : 00345
-     * Vérifier avec la requête select max(substring(matricule,2)) from Employe
-     *
-     */
     @Test
     public void testEmbaucheEmployeManagerMiTempsMaster() throws EmployeException {
         //Given
@@ -95,69 +84,74 @@ class EmployeServiceTest extends EmployeService {
         Poste poste = Poste.MANAGER;
         NiveauEtude niveauEtude = NiveauEtude.MASTER;
         Double tempsPartiel = 0.5;
-
         when(employeRepository.findLastMatricule()).thenReturn("00345");
         when(employeRepository.findByMatricule("M00346")).thenReturn(null);
-        when(employeRepository.save(any())).thenAnswer(returnsFirstArg());
 
-        //When Junit 5
+        //When
         employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
 
         //Then
-        ArgumentCaptor<Employe> employeCaptor = ArgumentCaptor.forClass(Employe.class);
-        verify(employeRepository).save(employeCaptor.capture());
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+        Assertions.assertEquals(nom, employeArgumentCaptor.getValue().getNom());
+        Assertions.assertEquals(prenom, employeArgumentCaptor.getValue().getPrenom());
+        Assertions.assertEquals(this.DATE_FOR_TEST.format(DateTimeFormatter.ofPattern("yyyyMMdd")), employeArgumentCaptor.getValue().getDateEmbauche().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        Assertions.assertEquals("M00346", employeArgumentCaptor.getValue().getMatricule());
+        Assertions.assertEquals(tempsPartiel, employeArgumentCaptor.getValue().getTempsPartiel());
 
-        Assertions.assertThat(employeCaptor.getValue().getNom()).isEqualTo(nom);
-        Assertions.assertThat(employeCaptor.getValue().getPrenom()).isEqualTo(prenom);
-        Assertions.assertThat(employeCaptor.getValue().getTempsPartiel()).isEqualTo(tempsPartiel);
-        Assertions.assertThat(employeCaptor.getValue().getMatricule()).isEqualTo("M00346");
-        Assertions.assertThat(employeCaptor.getValue().getSalaire()).isEqualTo(1064.85); //1521.22 * 1.4 * 0.5
-        Assertions.assertThat(employeCaptor.getValue().getDateEmbauche()).isEqualTo(LocalDate.now());
+        //1521.22 * 1.4 * 0.5
+        Assertions.assertEquals(1064.85, employeArgumentCaptor.getValue().getSalaire().doubleValue());
     }
 
     @Test
-    public void testEmbaucheEmployeLastMatricule99999() throws EmployeException {
+    public void testEmbaucheEmployeManagerMiTempsMasterNoLastMatricule() throws EmployeException {
         //Given
         String nom = "Doe";
         String prenom = "John";
         Poste poste = Poste.MANAGER;
         NiveauEtude niveauEtude = NiveauEtude.MASTER;
         Double tempsPartiel = 0.5;
+        when(employeRepository.findLastMatricule()).thenReturn(null);
+        when(employeRepository.findByMatricule("M00001")).thenReturn(null);
 
+        //When
+        employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
+
+        //Then
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+        Assertions.assertEquals("M00001", employeArgumentCaptor.getValue().getMatricule());
+    }
+
+    @Test
+    public void testEmbaucheEmployeManagerMiTempsMasterExistingEmploye(){
+        //Given
+        String nom = "Doe";
+        String prenom = "John";
+        Poste poste = Poste.MANAGER;
+        NiveauEtude niveauEtude = NiveauEtude.MASTER;
+        Double tempsPartiel = 0.5;
+        when(employeRepository.findLastMatricule()).thenReturn(null);
+        when(employeRepository.findByMatricule("M00001")).thenReturn(new Employe());
+
+        //When/Then
+        EntityExistsException e = Assertions.assertThrows(EntityExistsException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
+        Assertions.assertEquals("L'employé de matricule M00001 existe déjà en BDD", e.getMessage());
+    }
+
+    @Test
+    public void testEmbaucheEmployeManagerMiTempsMaster99999(){
+        //Given
+        String nom = "Doe";
+        String prenom = "John";
+        Poste poste = Poste.MANAGER;
+        NiveauEtude niveauEtude = NiveauEtude.MASTER;
+        Double tempsPartiel = 0.5;
         when(employeRepository.findLastMatricule()).thenReturn("99999");
 
-        //When
-        try {
-            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
-            Assertions.fail(this.MSG_ERROR_EXCEPTION);
-        }
-        //Then
-        catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo("Limite des 100000 matricules atteinte !");
-        }
-    }
-
-
-    @Test
-    public void testEmbaucheEmployeExistingEmploye() throws EmployeException, EntityExistsException {
-        //Given
-        String nom = "Doe";
-        String prenom = "John";
-        Poste poste = Poste.MANAGER;
-        NiveauEtude niveauEtude = NiveauEtude.MASTER;
-        Double tempsPartiel = 0.5;
-
-        when(employeRepository.findByMatricule("M00002")).thenReturn(new Employe());
-
-        //When
-        try {
-            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
-            Assertions.fail(this.MSG_ERROR_EXCEPTION);
-        }
-        //Then
-        catch (EntityExistsException entityExistsException) {
-            Assertions.assertThat(entityExistsException.getMessage()).isEqualTo("L'employé de matricule M00002 existe déjà en BDD");
-        }
+        //When/Then
+        EmployeException e = Assertions.assertThrows(EmployeException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
+        Assertions.assertEquals("Limite des 100000 matricules atteinte !", e.getMessage());
     }
 
     /**
@@ -165,7 +159,7 @@ class EmployeServiceTest extends EmployeService {
      * @throws EmployeException
      */
     @Test
-    public void testCalculPerformanceCommercialCATraitesInvalides() throws EmployeException {
+    public void calculPerformanceCommercialCATraitesInvalides() throws EmployeException {
         //Given - When
         String warnMsg = "Le chiffre d'affaire traité ne peut être négatif ou null !";
         try {
@@ -177,7 +171,7 @@ class EmployeServiceTest extends EmployeService {
         }
         //Then
         catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo(warnMsg);
+            Assertions.assertEquals(warnMsg, employeException.getMessage());
         }
     }
 
@@ -186,7 +180,7 @@ class EmployeServiceTest extends EmployeService {
      * @throws EmployeException
      */
     @Test
-    public void testCalculPerformanceCommercialObjectifCAInvalides() throws EmployeException {
+    public void calculPerformanceCommercialObjectifCAInvalides() throws EmployeException {
         //Given - When
         String warnMsg = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
         try {
@@ -198,7 +192,7 @@ class EmployeServiceTest extends EmployeService {
         }
         //Then
         catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo(warnMsg);
+            Assertions.assertEquals(warnMsg, employeException.getMessage());
         }
     }
 
@@ -208,7 +202,7 @@ class EmployeServiceTest extends EmployeService {
      * @throws EmployeException Si le matricule est null ou ne commence pas par un C
      */
     @Test
-    public void testCalculPerformanceCommercialMatriculeInvalide() throws EmployeException {
+    public void calculPerformanceCommercialMatriculeInvalide() throws EmployeException {
         //Given - When
         String warnMsg = "Le matricule ne peut être null et doit commencer par un C !";
         try {
@@ -220,12 +214,12 @@ class EmployeServiceTest extends EmployeService {
         }
         //Then
         catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo(warnMsg);
+            Assertions.assertEquals(warnMsg, employeException.getMessage());
         }
     }
 
     @Test
-    public void testCalculPerformanceEmployeIntrouvable() throws EmployeException {
+    public void calculPerformanceEmployeIntrouvable() throws EmployeException {
         //Given - When
         String warnMsg = "Le matricule C99999 n'existe pas !";
         try {
@@ -234,7 +228,7 @@ class EmployeServiceTest extends EmployeService {
         }
         //Then
         catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo(warnMsg);
+            Assertions.assertEquals(warnMsg, employeException.getMessage());
         }
     }
 
@@ -249,106 +243,186 @@ class EmployeServiceTest extends EmployeService {
      * Test 6 : Si performance calculée > moyenne des performances des commerciaux, il reçoit + 1 de performance.
      * Test 7&8 : (Performance calculée = Performance de base) Si performance calculée < moyenne des performances des commerciaux, alors la performance calculée ne change pas
      *
-     * Pour information, performanceMoyenne = 5.2023
-     * SELECT avg(c.performance) FROM commercial c JOIN employe e ON c.id = e.id
-     * WHERE substring(e.matricule, 1, 1) = "C";
+     *   * Initialisation du jeu de données des tests listés ci-dessus
+     *   *
+     *   * Récapitulatif des valeurs dans l'ordre suivant : caTraite, performance de l'employé, performance calculée :
+     *   * Test 1 : "15000, 1, 1",
+     *   * Test 2 : "15000, 2, 3",
+     *   * Test 3 : "12000, 4, 3",
+     *   * Test 4 : "16000, 3, 5",
+     *   * Test 5 : "18001, 1, 6",
+     *   * Test 6 : "19000, 5, 10",
+     *   * Test 7 : "10000, 2, 1",
+     *   * Test 8 : "10000, 6, 1"
      */
     @Test
-    public void testCalculPerformanceAllCases() throws EmployeException, Exception, EntityExistsException {
+    public void calculPerformanceTest1() throws EmployeException {
         //Given
-        Long objectifCAForTest = 15000L; //Valeur constante pour le jeu de tests
-        initValueForTestingCalculPerformanceCommercial();
-        try {
-            Employe employe = new Employe("Doe", "John", "C12345", LocalDate.now(), Entreprise.SALAIRE_BASE, 1, 1.0);
+        Employe employeTest1 = new Employe(this.NOM, this.PRENOM, "C00001", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 1, 1.0);
+        
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00001")).thenReturn(employeTest1);
+        
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
 
-        //When-Then
-            employeRepository.save(employe);
-            ArgumentCaptor<Employe> employeCaptor = ArgumentCaptor.forClass(Employe.class);
-            verify(employeRepository).save(employeCaptor.capture());
-            Employe employeCaptorValue = employeCaptor.getValue(); //Récupère l'employe généré par la méthode save ci-dessus
-            Assertions.fail("L'employé est " + employeCaptorValue);
-            // Initialisation de la performance de base de l'employé de ce test, à chaque itération
-            for (Integer numTest = 0; numTest < listForCATraites.size(); numTest++) {
-                employeCaptorValue.setPerformance(listForPerformanceBase.get(numTest).intValue());
-                try{
-                    employeService.calculPerformanceCommercial(employeCaptorValue.getMatricule(), listForCATraites.get(numTest).longValue(), objectifCAForTest);
-                } catch(EmployeException e) {
-                    Assertions.fail("EmployeException générée : caTraiteTest = " + listForCATraites.get(numTest).longValue() + "; objectifCAForTest = " + objectifCAForTest);
-                }
-                Assertions.assertThat(employeCaptorValue.getPerformance()).isEqualTo(listResultatPerformanceCalculee.get(numTest).intValue());
-            }
-            //Réinitialisation de la base de données à son état avant le lancement de cette méthode
-            employeRepository.delete(employe);
-        }
-        catch (Exception e) {
-            throw new Exception(this.MSG_ERROR_EXCEPTION);
-        }
+        //WHEN
+        employeService.calculPerformanceCommercial("C00001", 15000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(Entreprise.PERFORMANCE_BASE, employeArgumentCaptor.getValue().getPerformance());
     }
 
-    /**
-     * Initialisation du jeu de données testant calculPerformanceCommercial
-     *
-     * Récapitulatif du jeu de tests (caTraite, objectifCa, performance de base, performance calculée) :
-     * Test 1 : "15000, 15000, 1, 1",
-     * Test 2 : "15000, 15000, 2, 2",
-     * Test 3 : "12000, 15000, 4, 2",
-     * Test 4 : "16000, 15000, 3, 4",
-     * Test 5 : "18001, 15000, 1, 5",
-     * Test 6 : "19000, 15000, 5, 8",
-     * Test 7 : "10000, 15000, 2, 2",
-     * Test 8 : "10000, 15000, 6, 7"
-     */
-    public void initValueForTestingCalculPerformanceCommercial(){
-        listForCATraites.add(15000L);
-        /*listForCATraites.add(15000L);
-        listForCATraites.add(15000L);
-        listForCATraites.add(12000L);
-        listForCATraites.add(16000L);
-        listForCATraites.add(18001L);
-        listForCATraites.add(19000L);
-        listForCATraites.add(10000L);
-*/
-        listForPerformanceBase.add(1);
-        listForPerformanceBase.add(1);
-        listForPerformanceBase.add(2);
-        listForPerformanceBase.add(4);
-        listForPerformanceBase.add(3);
-        listForPerformanceBase.add(1);
-        listForPerformanceBase.add(5);
-        listForPerformanceBase.add(2);
+    @Test
+    public void calculPerformanceTest2() throws EmployeException {
+        //Given
+        Employe employeTest2 = new Employe(this.NOM, this.PRENOM, "C00002", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 2, this.TEMPS_PARTIEL);
 
-        listResultatPerformanceCalculee.add(1);
-        listResultatPerformanceCalculee.add(1);
-        listResultatPerformanceCalculee.add(2);
-        listResultatPerformanceCalculee.add(2);
-        listResultatPerformanceCalculee.add(4);
-        listResultatPerformanceCalculee.add(5);
-        listResultatPerformanceCalculee.add(8);
-        listResultatPerformanceCalculee.add(2);
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00002")).thenReturn(employeTest2);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00002", 15000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(3, employeArgumentCaptor.getValue().getPerformance().intValue());
     }
 
-    public Employe createCommercialForTest() throws EntityExistsException, EmployeException{
+    @Test
+    public void calculPerformanceTest3() throws EmployeException {
         //Given
-        String nom = "Doe";
-        String prenom = "John";
-        Poste poste = Poste.COMMERCIAL;
-        NiveauEtude niveauEtude = NiveauEtude.MASTER;
-        Double tempsPartiel = 1.0;
-        String errorMsg = "L'employé " + nom + " " + prenom + " existe déjà en BDD";
+        Employe employeTest3 = new Employe(this.NOM, this.PRENOM, "C00003", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 4, this.TEMPS_PARTIEL);
+        
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00003")).thenReturn(employeTest3);
+        
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
 
-        //When
-        try {
-            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
-            Assertions.fail(this.MSG_ERROR_EXCEPTION);
-            return null;
-        }
-        //Then
-        catch (EntityExistsException entityExistsException) {
-            Assertions.assertThat(entityExistsException.getMessage()).isEqualTo(errorMsg);
-        }
-        catch (EmployeException employeException) {
-            Assertions.assertThat(employeException.getMessage()).isEqualTo(errorMsg);
-        }
-        return employeRepository.findByMatricule(employeRepository.findLastMatricule());
+        //WHEN
+        employeService.calculPerformanceCommercial("C00003", 12000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(3, employeArgumentCaptor.getValue().getPerformance().intValue());
+    }
+
+    @Test
+    public void calculPerformanceTest4() throws EmployeException {
+        //Given
+        Employe employeTest4 = new Employe(this.NOM, this.PRENOM, "C00004", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 3, this.TEMPS_PARTIEL);
+        
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00004")).thenReturn(employeTest4);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00004", 16000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(5, employeArgumentCaptor.getValue().getPerformance().intValue());
+    }
+
+    @Test
+    public void calculPerformanceTest5() throws EmployeException {
+        //Given
+        Employe employeTest5 = new Employe(this.NOM, this.PRENOM, "C00005", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 1, this.TEMPS_PARTIEL);
+
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00005")).thenReturn(employeTest5);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00005", 18001L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(6, employeArgumentCaptor.getValue().getPerformance().intValue());
+    }
+
+    @Test
+    public void calculPerformanceTest6() throws EmployeException {
+        //Given
+        Employe employeTest6 = new Employe(this.NOM, this.PRENOM, "C00006", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 5, this.TEMPS_PARTIEL);
+
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00006")).thenReturn(employeTest6);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00006", 19000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(10, employeArgumentCaptor.getValue().getPerformance().intValue());
+
+    }
+
+    @Test
+    public void calculPerformanceTest7() throws EmployeException {
+        //Given
+        Employe employeTest7 = new Employe(this.NOM, this.PRENOM, "C00007", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 2, this.TEMPS_PARTIEL);
+
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00007")).thenReturn(employeTest7);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00007", 10000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(1, employeArgumentCaptor.getValue().getPerformance().intValue());
+
+    }
+
+    @Test
+    public void calculPerformanceTest8() throws EmployeException {
+        //Given
+        Employe employeTest8 = new Employe(this.NOM, this.PRENOM, "C00008", this.DATE_FOR_TEST, Entreprise.SALAIRE_BASE, 6, this.TEMPS_PARTIEL);
+
+        //Assignation des employés servant aux tests
+        when(employeRepository.findByMatricule("C00008")).thenReturn(employeTest8);
+
+        //Assignation de la performance moyenne à la requête
+        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("C")).thenReturn(AVG_PERFORMANCE_WHICH_START_WITH_C);
+
+        //WHEN
+        employeService.calculPerformanceCommercial("C00008", 10000L, this.OBJECTIF_CA_FOR_TEST);
+
+        // THEN
+        ArgumentCaptor<Employe> employeArgumentCaptor = ArgumentCaptor.forClass(Employe.class);
+        verify(employeRepository, times(1)).save(employeArgumentCaptor.capture());
+
+        Assertions.assertEquals(1, employeArgumentCaptor.getValue().getPerformance().intValue());
+
     }
 }
