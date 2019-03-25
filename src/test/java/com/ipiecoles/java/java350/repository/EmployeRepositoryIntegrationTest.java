@@ -1,18 +1,32 @@
 package com.ipiecoles.java.java350.repository;
 
-import org.assertj.core.api.Assertions;
+import com.ipiecoles.java.java350.model.Employe;
+import com.ipiecoles.java.java350.model.Entreprise;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.mockito.Mockito.when;
+import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class EmployeRepositoryIntegrationTest {
 
     @Autowired
-    private EmployeRepository employeRepository;
+    EmployeRepository employeRepository;
+
+    @BeforeEach
+    @AfterEach
+    public void setup(){
+        employeRepository.deleteAll();
+    }
 
     /**
      * Seuls le Commercial et le Manager peuvent avoir une performance
@@ -22,39 +36,25 @@ public class EmployeRepositoryIntegrationTest {
      * Test le cas où la chaîne est nulle (null)
      */
     @Test
-    public void integrationAvgPerformanceWhereMatriculeStartsWithNull() {
-        //Given - When
-        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("T")).thenReturn(0.0);
-        when(employeRepository.avgPerformanceWhereMatriculeStartsWith("")).thenReturn(0.0);
-        when(employeRepository.avgPerformanceWhereMatriculeStartsWith(null)).thenReturn(null);
-
+    public void integrationAvgPerformanceWhereMatriculeStartsWithParameterInvalide() {
+        //Given - When - Then
+        //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("T").doubleValue());
+        //assertNull(employeRepository.avgPerformanceWhereMatriculeStartsWith(null));
+        //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("").doubleValue());
     }
 
     /**
-     * Seuls le Commercial et le Manager peuvent avoir une performance
+     * Seuls le Commercial C et le Manager M peuvent avoir une performance
      *
      */
     @Test
-    public void integrationAvgPerformanceWhereMatriculeStartsWithCOrM() {
+    public void integrationAvgPerformanceWhereMatriculeStartsWithC() {
         //Given - When
-        /* Après avoir lancé la requête suivante dans la bdd :
-         * SELECT avg(c.performance) FROM Commercial c
-         * JOIN Employe e ON e.id = c.id
-         * WHERE SUBSTRING(e.matricule,0,1) = "C";
-         * vérifions le résultat pour la performance des commerciaux :
-         */
-        Double avgPerformanceC = employeRepository.avgPerformanceWhereMatriculeStartsWith("C");
-
-        /* Après avoir lancé la requête suivante dans la bdd :
-         * SELECT avg(m.performance) FROM Manager m
-         * JOIN Employe e ON e.id = m.id
-         * WHERE SUBSTRING(e.matricule,0,1) = "M";
-         * vérifions le résultat pour la performance des managers :
-         */
-        Double avgPerformanceM = employeRepository.avgPerformanceWhereMatriculeStartsWith("M");
+        Integer performance = 1;
+        employeRepository.save(new Employe("Doe", "John", "C12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+        Double avgPerformanceCommercial = employeRepository.avgPerformanceWhereMatriculeStartsWith("C");
 
         //Then
-        Assertions.assertThat(avgPerformanceC).isEqualTo(null);
-        Assertions.assertThat(avgPerformanceM).isEqualTo(null);
+        assertEquals(1.0, avgPerformanceCommercial.doubleValue());
     }
 }
