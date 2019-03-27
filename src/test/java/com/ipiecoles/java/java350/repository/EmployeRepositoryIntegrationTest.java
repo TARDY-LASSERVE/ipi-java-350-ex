@@ -3,7 +3,6 @@ package com.ipiecoles.java.java350.repository;
 import com.ipiecoles.java.java350.model.Employe;
 import com.ipiecoles.java.java350.model.Entreprise;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,11 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
-<<<<<<< HEAD
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-=======
->>>>>>> bdd68febb975f8cbd2aa182adb62c10aeeddbcdf
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -39,20 +35,11 @@ public class EmployeRepositoryIntegrationTest {
      * Test le cas où la chaîne est nulle (null)
      */
     @Test
-<<<<<<< HEAD
     public void integrationAvgPerformanceWhereMatriculeStartsWithParameterInvalide() {
         //Given - When - Then
         //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("T").doubleValue());
         //assertNull(employeRepository.avgPerformanceWhereMatriculeStartsWith(null));
         //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("").doubleValue());
-=======
-    public void integrationAvgPerformanceWhereMatriculeStartsWithNull() {
-        //Given - When
-        //when(employeRepository.avgPerformanceWhereMatriculeStartsWith("T")).thenReturn(0.0);
-        //when(employeRepository.avgPerformanceWhereMatriculeStartsWith("")).thenReturn(0.0);
-        //when(employeRepository.avgPerformanceWhereMatriculeStartsWith(null)).thenReturn(null);
-
->>>>>>> bdd68febb975f8cbd2aa182adb62c10aeeddbcdf
     }
 
     /**
@@ -67,10 +54,6 @@ public class EmployeRepositoryIntegrationTest {
         Double avgPerformanceCommercial = employeRepository.avgPerformanceWhereMatriculeStartsWith("C");
 
         //Then
-<<<<<<< HEAD
         assertEquals(1.0, avgPerformanceCommercial.doubleValue());
-=======
-        Assertions.assertEquals(null, avgPerformanceCommercial);
->>>>>>> bdd68febb975f8cbd2aa182adb62c10aeeddbcdf
     }
 }
