@@ -19,12 +19,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class EmployeServiceIntegrationTest {
 
     @Autowired
-    EmployeService employeService;
+    private EmployeService employeService;
 
     @Autowired
     private EmployeRepository employeRepository;
@@ -59,5 +60,28 @@ public class EmployeServiceIntegrationTest {
 
         //1521.22 * 1.2 * 1.0
         Assertions.assertEquals(1825.46, employe.getSalaire().doubleValue());
+    }
+
+    /**
+     * Méthode vérifiant le calcul de la performance d'un commercial en fonction de ses objectifs CA et du CA traité dans l'année.
+     *
+     * Test 1 : Si le CA est inférieur de plus de 20% à l'objectif fixé, le commercial retombe à la performance de base
+     *
+     *   Initialisation du jeu de données dans l'ordre suivant :
+     *     caTraite, performance de l'employé, performance calculée :
+     *   Test : "15000, 1, 1"
+     */
+    @Test
+    public void integrationCalculPerformanceCommercial() throws EmployeException {
+        //Given
+        employeRepository.save(new Employe("Doe", "John", "C00001", LocalDate.now(), Entreprise.SALAIRE_BASE, 1, 1.0));
+        Employe employe = employeRepository.findByMatricule("C00001");
+
+        //When
+        employeService.calculPerformanceCommercial("C00001", 15000L, 15000L);
+
+        //Then
+        Assertions.assertNotNull(employe);
+        Assertions.assertEquals(1.0, employe.getPerformance().doubleValue());
     }
 }

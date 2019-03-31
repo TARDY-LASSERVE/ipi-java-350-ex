@@ -3,6 +3,7 @@ package com.ipiecoles.java.java350.repository;
 import com.ipiecoles.java.java350.model.Employe;
 import com.ipiecoles.java.java350.model.Entreprise;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -37,9 +38,7 @@ public class EmployeRepositoryIntegrationTest {
     @Test
     public void integrationAvgPerformanceWhereMatriculeStartsWithParameterInvalide() {
         //Given - When - Then
-        //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("T").doubleValue());
-        //assertNull(employeRepository.avgPerformanceWhereMatriculeStartsWith(null));
-        //assertEquals(0.0, employeRepository.avgPerformanceWhereMatriculeStartsWith("").doubleValue());
+        Assertions.assertNull(employeRepository.avgPerformanceWhereMatriculeStartsWith(null));
     }
 
     /**
@@ -48,12 +47,42 @@ public class EmployeRepositoryIntegrationTest {
      */
     @Test
     public void integrationAvgPerformanceWhereMatriculeStartsWithC() {
-        //Given - When
+        //Given
         Integer performance = 1;
         employeRepository.save(new Employe("Doe", "John", "C12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+
+        //When
         Double avgPerformanceCommercial = employeRepository.avgPerformanceWhereMatriculeStartsWith("C");
 
         //Then
-        assertEquals(1.0, avgPerformanceCommercial.doubleValue());
+        Assertions.assertEquals(1.0, avgPerformanceCommercial.doubleValue());
+    }
+
+
+    @Test
+    public void integrationAvgPerformanceWhereMatriculeStartsWithM() {
+        //Given
+        Integer performance = 2;
+        employeRepository.save(new Employe("Doe", "John", "M12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+        employeRepository.save(new Employe("Doe", "Johann", "M12346", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+
+        //When
+        Double avgPerformanceManager = employeRepository.avgPerformanceWhereMatriculeStartsWith("M");
+
+        //Then
+        Assertions.assertEquals(2.0, avgPerformanceManager.doubleValue());
+    }
+
+    @Test
+    public void integrationAvgPerformanceWhereMatriculeStartsWithT() {
+        //Given
+        Integer performance = 0;
+        employeRepository.save(new Employe("Doe", "John", "T12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+
+        //When
+        Double avgPerformanceTechnicien = employeRepository.avgPerformanceWhereMatriculeStartsWith("T");
+
+        //Then
+        Assertions.assertEquals(0.0, avgPerformanceTechnicien.doubleValue());
     }
 }

@@ -124,23 +124,35 @@ public class EmployeServiceTest {
     }
 
     @Test
-    public void testEmbaucheEmployeManagerMiTempsMasterExistingEmploye(){
+    public void testEmbaucheEmployeManagerMiTempsMasterExistingEmploye() throws EmployeException {
         //Given
+        when(employeRepository.findLastMatricule()).thenReturn("00000");
+        when(employeRepository.findByMatricule("M00001")).thenReturn(new Employe());
+
         String nom = "Doe";
         String prenom = "John";
         Poste poste = Poste.MANAGER;
         NiveauEtude niveauEtude = NiveauEtude.MASTER;
         Double tempsPartiel = 0.5;
-        when(employeRepository.findLastMatricule()).thenReturn(null);
-        when(employeRepository.findByMatricule("M00001")).thenReturn(new Employe());
 
-        //When/Then
-        EntityExistsException e = Assertions.assertThrows(EntityExistsException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
-        Assertions.assertEquals("L'employé de matricule M00001 existe déjà en BDD", e.getMessage());
+        Employe employe = new Employe();
+        employe.setNom(nom);
+        employe.setPrenom(prenom);
+        employe.setMatricule("M00001");
+
+        //When
+        try {
+            employeRepository.save(employe);
+            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
+        }
+        //Then
+        catch (EntityExistsException e) {
+            Assertions.assertEquals("L'employé de matricule M00001 existe déjà en BDD", e.getMessage());
+        }
     }
 
     @Test
-    public void testEmbaucheEmployeManagerMiTempsMaster99999(){
+    public void testEmbaucheEmployeManagerMiTempsMaster99999() throws EmployeException {
         //Given
         String nom = "Doe";
         String prenom = "John";
@@ -149,9 +161,13 @@ public class EmployeServiceTest {
         Double tempsPartiel = 0.5;
         when(employeRepository.findLastMatricule()).thenReturn("99999");
 
-        //When/Then
-        EmployeException e = Assertions.assertThrows(EmployeException.class, () -> employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel));
-        Assertions.assertEquals("Limite des 100000 matricules atteinte !", e.getMessage());
+        //When - Then
+        try {
+            employeService.embaucheEmploye(nom, prenom, poste, niveauEtude, tempsPartiel);
+        }
+        catch (EmployeException employeException) {
+            Assertions.assertEquals("Limite des 100000 matricules atteinte !", employeException.getMessage());
+        }
     }
 
     /**

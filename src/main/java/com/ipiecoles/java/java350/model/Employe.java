@@ -70,11 +70,6 @@ public class Employe {
         //Calcul du nombre de jours dans l'année étant compris dans un week-end afin de les enlever du calcul final
         Integer nbJrsOfWeekEnds = 104;
         switch (LocalDate.of(dateCalcul.getYear(),1,1).getDayOfWeek()){
-            case FRIDAY:
-                if(dateCalcul.isLeapYear()) {
-                    nbJrsOfWeekEnds +=  1;
-                }
-                break;
             case SATURDAY:
                 if(dateCalcul.isLeapYear()) {
                     nbJrsOfWeekEnds += 2;

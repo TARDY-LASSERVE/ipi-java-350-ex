@@ -97,27 +97,26 @@ public class EmployeService {
      * @throws EmployeException Si le matricule est null ou ne commence pas par un C
      */
     public void calculPerformanceCommercial(String matricule, Long caTraite, Long objectifCa) throws EmployeException {
-        String warnMessage = "";
         //Vérification des paramètres d'entrée
         if(caTraite == null || caTraite < 0){
-            warnMessage = "Le chiffre d'affaire traité ne peut être négatif ou null !";
+            String warnMessage = "Le chiffre d'affaire traité ne peut être négatif ou null !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }
         if(objectifCa == null || objectifCa < 0){
-            warnMessage = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
+            String warnMessage = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }
         if(matricule == null || !matricule.startsWith("C")){
-            warnMessage = "Le matricule ne peut être null et doit commencer par un C !";
+            String warnMessage = "Le matricule ne peut être null et doit commencer par un C !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }
         //Recherche de l'employé dans la base
         Employe employe = employeRepository.findByMatricule(matricule);
         if(employe == null){
-            warnMessage = "Le matricule " + matricule + " n'existe pas !";
+            String warnMessage = "Le matricule " + matricule + " n'existe pas !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }

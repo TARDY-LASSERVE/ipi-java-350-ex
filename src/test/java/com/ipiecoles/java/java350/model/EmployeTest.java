@@ -174,7 +174,7 @@ public class EmployeTest {
     /**
      * Récupération des valeurs des constantes déjà initialisés ailleurs :
      *
-*/
+    */
     @ParameterizedTest()
     @CsvSource({
             "1, 'M00001', 0, 1.0, 1700.0",
@@ -193,10 +193,8 @@ public class EmployeTest {
         e.setDateEmbauche(LocalDate.now().minusYears(nbYearsAnciennete));
         e.setTempsPartiel(tpsPartiel);
 
-
         //When
         Double prime = e.getPrimeAnnuelle();
-
 
         //Then
         Assertions.assertThat(prime).isEqualTo(primeAnnuelle);
