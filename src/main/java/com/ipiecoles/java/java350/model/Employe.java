@@ -1,10 +1,5 @@
 package com.ipiecoles.java.java350.model;
 
-import com.ipiecoles.java.java350.exception.EmployeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -75,19 +70,19 @@ public class Employe {
         //Calcul du nombre de jours dans l'année étant compris dans un week-end afin de les enlever du calcul final
         Integer nbJrsOfWeekEnds = 104;
         switch (LocalDate.of(dateCalcul.getYear(),1,1).getDayOfWeek()){
-            case THURSDAY:
+            case FRIDAY:
                 if(dateCalcul.isLeapYear()) {
                     nbJrsOfWeekEnds +=  1;
                 }
                 break;
-            case FRIDAY:
+            case SATURDAY:
                 if(dateCalcul.isLeapYear()) {
                     nbJrsOfWeekEnds += 2;
                 } else {
                     nbJrsOfWeekEnds += 1;
                 }
                 break;
-            case SATURDAY:
+            case SUNDAY:
                 nbJrsOfWeekEnds += 1;
                 break;
         }
@@ -145,7 +140,7 @@ public class Employe {
      *
      * @param pourcentage de l'augmentation
      */
-    public void augmenterSalaire(Double pourcentage) throws IllegalArgumentException {
+    public void augmenterSalaire(Double pourcentage) {
         if(pourcentage == null || pourcentage < 0.0){
             throw new IllegalArgumentException("Le pourcentage d'augmentation du salaire est null ou négatif !");
         }

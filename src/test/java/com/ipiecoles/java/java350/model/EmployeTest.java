@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import javax.persistence.EntityExistsException;
 import java.time.LocalDate;
 
 public class EmployeTest {
@@ -16,15 +15,11 @@ public class EmployeTest {
         Employe employe = new Employe();
         employe.setDateEmbauche(LocalDate.now());
 
-
         //When = Exécution de la méthode à tester
-        //Toujours mettre 1 seul test
         Integer nbAnnee = employe.getNombreAnneeAnciennete();
-
 
         //Then = Vérifications de ce qu'a fait la méthode
         Assertions.assertThat(nbAnnee).isEqualTo(0);
-
     }
 
     @Test
@@ -33,14 +28,11 @@ public class EmployeTest {
         Employe employe = new Employe();
         employe.setDateEmbauche(null);
 
-
         //When = Exécution de la méthode à tester
         Integer nbAnnee = employe.getNombreAnneeAnciennete();
 
-
         //Then = Vérifications de ce qu'a fait la méthode
         Assertions.assertThat(nbAnnee).isEqualTo(0);
-
     }
 
     @Test
@@ -49,14 +41,11 @@ public class EmployeTest {
         Employe employe = new Employe();
         employe.setDateEmbauche(LocalDate.now().minusYears(2L));
 
-
         //When
         Integer nbAnnee = employe.getNombreAnneeAnciennete();
 
-
         //Then
         Assertions.assertThat(nbAnnee).isGreaterThanOrEqualTo(2);
-
     }
 
     @Test
@@ -65,14 +54,11 @@ public class EmployeTest {
         Employe employe = new Employe();
         employe.setDateEmbauche(LocalDate.now().plusYears(2));
 
-
         //When
         Integer nbAnnee = employe.getNombreAnneeAnciennete();
 
-
         //Then
         Assertions.assertThat(nbAnnee).isGreaterThanOrEqualTo(0);
-
     }
 
     @ParameterizedTest()
@@ -135,7 +121,6 @@ public class EmployeTest {
             Assertions.assertThat(illegalArgumentException.getMessage()).isEqualTo("Le pourcentage d'augmentation du salaire est null ou négatif !");
         }
         Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
-
     }
 
     @Test
@@ -155,7 +140,6 @@ public class EmployeTest {
             Assertions.assertThat(illegalArgumentException.getMessage()).isEqualTo("L'employé ne peut pas avoir un trop gros salaire !!");
         }
         Assertions.assertThat(employe.getSalaire()).isEqualTo(salaire);
-
     }
 
 
@@ -171,9 +155,9 @@ public class EmployeTest {
     @ParameterizedTest(name = "Nb Jours RTT.")
     @CsvSource({
             "2019, 8.0",
-            "2021, 10.0",
+            "2021, 11.0",
             "2022, 10.0",
-            "2032, 11.0"
+            "2032, 12.0"
     })
     public void testNbJoursRttTempsPlein(Integer anneeCalcul, Double nbJrsRTT){
         //Given

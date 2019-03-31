@@ -23,9 +23,7 @@ public class EmployeRepositoryTest {
 
     @Test
     public void testFindLastMatriculeEmpty(){
-        //Given
-
-        //When
+        //Given - When
         String lastMatricule = employeRepository.findLastMatricule();
 
         //Then
