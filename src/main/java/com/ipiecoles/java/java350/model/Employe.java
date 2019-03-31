@@ -77,9 +77,13 @@ public class Employe {
                     nbJrsOfWeekEnds += 1;
                 }
                 break;
+
             case SUNDAY:
                 nbJrsOfWeekEnds += 1;
                 break;
+
+            default:
+                    break;
         }
 
         //Récupère tous les jours fériés hors compris dans un week-end

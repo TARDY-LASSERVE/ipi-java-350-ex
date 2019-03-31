@@ -103,12 +103,12 @@ public class EmployeService {
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }
-        if(objectifCa == null || objectifCa < 0){
+        else if(objectifCa == null || objectifCa < 0){
             String warnMessage = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
         }
-        if(matricule == null || !matricule.startsWith("C")){
+        else if(matricule == null || !matricule.startsWith("C")){
             String warnMessage = "Le matricule ne peut être null et doit commencer par un C !";
             logger.warn(warnMessage);
             throw new EmployeException(warnMessage);
