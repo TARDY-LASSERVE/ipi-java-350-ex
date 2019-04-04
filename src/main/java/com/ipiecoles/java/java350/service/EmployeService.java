@@ -146,7 +146,7 @@ public class EmployeService {
      * @param caTraite
      * @param objectifCa
      */
-    private void verifyParameters(String matricule, Long caTraite, Long objectifCa) {
+    private void verifyParameters(String matricule, Long caTraite, Long objectifCa) throws EmployeException{
 
         if(caTraite == null || caTraite < 0){
             String warnMessage = "Le chiffre d'affaire traité ne peut être négatif ou null !";
