@@ -31,9 +31,7 @@ public class EmployeRepositoryIntegrationTest {
     /**
      * Seuls le Commercial et le Manager peuvent avoir une performance
      *
-     * Test le cas où la requête souhaite être lancé sur un technicien ("T")
-     * Test le cas où la chaîne est vide ("")
-     * Test le cas où la chaîne est nulle (null)
+     * Test le cas où la chaîne en entrée vaut null
      */
     @Test
     public void integrationAvgPerformanceWhereMatriculeStartsWithParameterInvalide() {
@@ -46,43 +44,21 @@ public class EmployeRepositoryIntegrationTest {
      *
      */
     @Test
-    public void integrationAvgPerformanceWhereMatriculeStartsWithC() {
+    public void integrationAvgPerformanceWhereMatriculeStartsWithX() {
         //Given
-        Integer performance = 1;
-        employeRepository.save(new Employe("Doe", "John", "C12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
+        employeRepository.save(new Employe("Doe", "John", "C12345", LocalDate.now(), Entreprise.SALAIRE_BASE, 1, 1.0));
+        employeRepository.save(new Employe("Doe", "John", "M12345", LocalDate.now(), Entreprise.SALAIRE_BASE, 2, 1.0));
+        employeRepository.save(new Employe("Doe", "Johann", "M12346", LocalDate.now(), Entreprise.SALAIRE_BASE, 2, 1.0));
+        employeRepository.save(new Employe("Doe", "John", "T12345", LocalDate.now(), Entreprise.SALAIRE_BASE, 0, 1.0));
 
         //When
         Double avgPerformanceCommercial = employeRepository.avgPerformanceWhereMatriculeStartsWith("C");
-
-        //Then
-        Assertions.assertEquals(1.0, avgPerformanceCommercial.doubleValue());
-    }
-
-
-    @Test
-    public void integrationAvgPerformanceWhereMatriculeStartsWithM() {
-        //Given
-        Integer performance = 2;
-        employeRepository.save(new Employe("Doe", "John", "M12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
-        employeRepository.save(new Employe("Doe", "Johann", "M12346", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
-
-        //When
         Double avgPerformanceManager = employeRepository.avgPerformanceWhereMatriculeStartsWith("M");
-
-        //Then
-        Assertions.assertEquals(2.0, avgPerformanceManager.doubleValue());
-    }
-
-    @Test
-    public void integrationAvgPerformanceWhereMatriculeStartsWithT() {
-        //Given
-        Integer performance = 0;
-        employeRepository.save(new Employe("Doe", "John", "T12345", LocalDate.now(), Entreprise.SALAIRE_BASE, performance, 1.0));
-
-        //When
         Double avgPerformanceTechnicien = employeRepository.avgPerformanceWhereMatriculeStartsWith("T");
 
         //Then
+        Assertions.assertEquals(1.0, avgPerformanceCommercial.doubleValue());
+        Assertions.assertEquals(2.0, avgPerformanceManager.doubleValue());
         Assertions.assertEquals(0.0, avgPerformanceTechnicien.doubleValue());
     }
 }

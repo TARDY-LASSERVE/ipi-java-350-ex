@@ -97,22 +97,10 @@ public class EmployeService {
      * @throws EmployeException Si le matricule est null ou ne commence pas par un C
      */
     public void calculPerformanceCommercial(String matricule, Long caTraite, Long objectifCa) throws EmployeException {
+
         //Vérification des paramètres d'entrée
-        if(caTraite == null || caTraite < 0){
-            String warnMessage = "Le chiffre d'affaire traité ne peut être négatif ou null !";
-            logger.warn(warnMessage);
-            throw new EmployeException(warnMessage);
-        }
-        else if(objectifCa == null || objectifCa < 0){
-            String warnMessage = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
-            logger.warn(warnMessage);
-            throw new EmployeException(warnMessage);
-        }
-        else if(matricule == null || !matricule.startsWith("C")){
-            String warnMessage = "Le matricule ne peut être null et doit commencer par un C !";
-            logger.warn(warnMessage);
-            throw new EmployeException(warnMessage);
-        }
+        verifyParameters(matricule, caTraite, objectifCa);
+
         //Recherche de l'employé dans la base
         Employe employe = employeRepository.findByMatricule(matricule);
         if(employe == null){
@@ -149,5 +137,31 @@ public class EmployeService {
         //Affectation et sauvegarde
         employe.setPerformance(performance);
         employeRepository.save(employe);
+    }
+
+    /**
+     * Vérification des paramètres d'entrée
+     *
+     * @param matricule
+     * @param caTraite
+     * @param objectifCa
+     */
+    private void verifyParameters(String matricule, Long caTraite, Long objectifCa) {
+
+        if(caTraite == null || caTraite < 0){
+            String warnMessage = "Le chiffre d'affaire traité ne peut être négatif ou null !";
+            logger.warn(warnMessage);
+            throw new EmployeException(warnMessage);
+        }
+        else if(objectifCa == null || objectifCa < 0){
+            String warnMessage = "L'objectif de chiffre d'affaire ne peut être négatif ou null !";
+            logger.warn(warnMessage);
+            throw new EmployeException(warnMessage);
+        }
+        else if(matricule == null || !matricule.startsWith("C")){
+            String warnMessage = "Le matricule ne peut être null et doit commencer par un C !";
+            logger.warn(warnMessage);
+            throw new EmployeException(warnMessage);
+        }
     }
 }
